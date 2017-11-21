@@ -4,6 +4,13 @@
 
 import * as amqp from 'amqp';
 
+interface IMQConfig {
+  exchangeName: string;
+  exchangeOption: amqp.ExchangeOptions;
+  queueName: string;
+  queueOption: amqp.QueueOptions;
+}
+
 /**
  * mq类
  */
@@ -11,8 +18,9 @@ class MQ {
   private ready: boolean;
   private exchangeSubmit: amqp.AMQPExchange;
   private queue: amqp.AMQPQueue;
+  private isConfirm: boolean = false;
 
-  constructor(connOptions: amqp.ConnectionOptions, { exchangeName, exchangeOption, queueName, queueOption }) {
+  constructor(connOptions: amqp.ConnectionOptions, { exchangeName, exchangeOption, queueName, queueOption }: IMQConfig) {
     const that = this;
     const conn: amqp.AMQPClient = amqp.createConnection(connOptions);
 
@@ -30,10 +38,9 @@ class MQ {
             that.ready = true;
             that.queue = queue;
             console.info('rabbitMQ connection success!');
+            that.isConfirm = exchangeOption.confirm || false;
           });
         });
-
-
       });
     });
 
@@ -57,7 +64,7 @@ class MQ {
    * @returns
    * @memberof MQ
    */
-  public publishMsg(body: string, options = {}) {
+  publishMsg(body: string, options: amqp.ExchangePublishOptions = {}) {
     // console.log('publish', this.ready);
     const that = this;
     return new Promise(((resolve, reject) => {
@@ -83,15 +90,25 @@ class MQ {
    * @param {any} callback
    * @memberof MQ
    */
-  public subscribe(options: amqp.SubscribeOptions, callback: amqp.SubscribeCallback) {
+  subscribe(options: amqp.SubscribeOptions = {}) {
     const that = this;
-    if (that.queue) {
-      that.queue.subscribe(options, callback);
-    } else {
-      setTimeout(() => {
-        that.subscribe(options, callback);
-      }, 1000);
-    }
+    return new Promise((resolve, reject) => {
+      if (that.queue) {
+        if (that.isConfirm) options.ack = true;
+        that.queue.subscribe(options, (message, headers, deliveryInfo, ack) => {
+          // console.log(message.data.toString(), headers, deliveryInfo);
+          try {
+            resolve({ message, headers, deliveryInfo, ack });
+          } catch (error) {
+            reject(error);
+          }
+        });
+      } else {
+        setTimeout(() => {
+          resolve(that.subscribe(options));
+        }, 1000);
+      }
+    });
   }
 }
 
