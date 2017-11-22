@@ -1,6 +1,6 @@
 import * as amqp from 'amqp';
 
-interface IMQOptions {
+declare interface IMQOptions {
   exchangeName: string;
   exchangeOption: amqp.ExchangeOptions;
   queueName: string;

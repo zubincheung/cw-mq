@@ -4,7 +4,6 @@
   "description": "rebbitmq组件",
   "main": "index.js",
   "scripts": {
-    "build": "rimraf lib & tsc",
     "test": "mocha --recursive  test/**/*.test.js"
   },
   "repository": {
@@ -18,20 +17,10 @@
   "author": "Zubin",
   "license": "MIT",
   "dependencies": {
-    "amqp": "^0.2.6",
-    "tslib": "^1.8.0"
+    "amqp": "^0.2.6"
   },
   "devDependencies": {
-    "@types/amqp": "^0.2.3",
-    "@types/chai": "^4.0.4",
-    "@types/mocha": "^2.2.44",
-    "@types/node": "^8.0.33",
     "chai": "^4.1.2",
-    "mocha": "^4.0.1",
-    "rimraf": "^2.6.1",
-    "ts-node": "^3.3.0",
-    "tslint": "^5.7.0",
-    "tslint-config-airbnb": "^5.4.2",
-    "typescript": "^2.5.3"
+    "mocha": "^4.0.1"
   }
 }
