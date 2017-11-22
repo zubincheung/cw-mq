@@ -31,7 +31,7 @@ declare class MQ {
    * @returns
    * @memberof MQ
    */
-  async publishMsg(body: string, options?: {}): Promise<any>;
+  publishMsg(body: string, options?: {}): Promise<any>;
 
   /**
    * 接收消息
@@ -49,6 +49,6 @@ declare class MQ {
    * @param {any} callback
    * @memberof MQ
    */
-  async subscribeAsync(options: amqp.SubscribeOptions): Promise<any>;
+  subscribeAsync(options: amqp.SubscribeOptions): Promise<any>;
 }
 export default MQ;
