@@ -8,7 +8,13 @@ const amqp = require('amqp');
  * mq类
  */
 class MQ {
-
+  /**
+   * 实例化mq类
+   * 
+   * @param {amqp.ConnectionOptions} connOptions 连接配置
+   * @param {IMQOptions} options 
+   * @memberof MQ
+   */
   constructor(connOptions, { exchangeName, exchangeOption, queueName, queueOption }) {
     const that = this;
     const conn = amqp.createConnection(connOptions);
@@ -53,7 +59,7 @@ class MQ {
    * @returns
    * @memberof MQ
    */
-  publishMsg(body, options = {}) {
+  async  publishMsg(body, options = {}) {
     // console.log('publish', this.ready);
     const that = this;
     return new Promise(((resolve, reject) => {
@@ -73,13 +79,13 @@ class MQ {
   }
 
   /**
-   * 接收消息
-   *
-   * @param {any} options
-   * @param {any} callback
-   * @memberof MQ
-   */
-  subscribe(options = {}) {
+ * 接收消息
+ *
+ * @param {any} options
+ * @param {any} callback
+ * @memberof MQ
+ */
+  async subscribeAsync(options = {}) {
     const that = this;
     return new Promise((resolve, reject) => {
       if (that.queue) {
@@ -98,6 +104,25 @@ class MQ {
         }, 1000);
       }
     });
+  }
+
+  /**
+   * 接收消息
+   *
+   * @param {any} options
+   * @param {any} callback
+   * @memberof MQ
+   */
+  subscribe(options = {}, callback) {
+    const that = this;
+    if (that.queue) {
+      if (that.isConfirm) options.ack = true;
+      that.queue.subscribe(options, callback);
+    } else {
+      setTimeout(() => {
+        resolve(that.subscribe(options, callback));
+      }, 1000);
+    }
   }
 }
 

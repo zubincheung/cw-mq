@@ -36,12 +36,20 @@ describe('mq test', () => {
     });
   });
 
-  it('subscribe:', () => {
-    return mq.subscribe().then((result) => {
+  it('subscribeAsync:', () => {
+    return mq.subscribeAsync().then((result) => {
       expect(result.message.data.toString()).to.be.eq('heartbeat-test')
       result.ack.acknowledge(true);
     }).catch((err) => {
       expect(err).to.be.null;
+    });
+  });
+
+  it('subscribe:', done => {
+    mq.subscribe((message, headers, deliveryInfo, ack) => {
+      expect(message.data.toString()).to.be.eq('heartbeat-test')
+      ack.acknowledge(true);
+      done();
     });
   });
 });

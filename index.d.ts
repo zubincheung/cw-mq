@@ -13,8 +13,16 @@ declare interface IMQOptions {
 declare class MQ {
   private ready;
   private exchangeSubmit;
-  private queue;
+
+  /**
+   * 实例化mq类
+   * 
+   * @param {amqp.ConnectionOptions} connOptions 连接配置
+   * @param {IMQOptions} options 
+   * @memberof MQ
+   */
   constructor(connOptions: amqp.ConnectionOptions, options: IMQOptions);
+
   /**
    * 发布消息
    *
@@ -23,7 +31,8 @@ declare class MQ {
    * @returns
    * @memberof MQ
    */
-  publishMsg(body: string, options?: {}): Promise<{}>;
+  async publishMsg(body: string, options?: {}): Promise<{}>;
+
   /**
    * 接收消息
    *
@@ -31,6 +40,15 @@ declare class MQ {
    * @param {any} callback
    * @memberof MQ
    */
-  subscribe(options: amqp.SubscribeOptions, callback: amqp.SubscribeCallback): void;
+  async subscribe(options: amqp.SubscribeOptions, callback: amqp.SubscribeCallback): void;
+
+  /**
+   * 接收消息(异步)
+   *
+   * @param {any} options
+   * @param {any} callback
+   * @memberof MQ
+   */
+  subscribeAsync(options: amqp.SubscribeOptions): Promise<T>;
 }
 export default MQ;
