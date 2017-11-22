@@ -120,7 +120,7 @@ class MQ {
       that.queue.subscribe(options, callback);
     } else {
       setTimeout(() => {
-        resolve(that.subscribe(options, callback));
+        that.subscribe(options, callback);
       }, 1000);
     }
   }

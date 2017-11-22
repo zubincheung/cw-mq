@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import * as amqp from 'amqp';
 
 declare interface IMQOptions {
@@ -40,7 +41,7 @@ declare class MQ {
    * @param {any} callback
    * @memberof MQ
    */
-   subscribe(options: amqp.SubscribeOptions, callback: amqp.SubscribeCallback): void;
+  subscribe(options: amqp.SubscribeOptions, callback: amqp.SubscribeCallback): void;
 
   /**
    * 接收消息(异步)
@@ -51,4 +52,6 @@ declare class MQ {
    */
   subscribeAsync(options: amqp.SubscribeOptions): Promise<any>;
 }
-export default MQ;
+export = MQ;
+
+declare module MQ {}
