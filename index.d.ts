@@ -31,7 +31,7 @@ declare class MQ {
    * @returns
    * @memberof MQ
    */
-  async publishMsg(body: string, options?: {}): Promise<{}>;
+  async publishMsg(body: string, options?: {}): Promise<any>;
 
   /**
    * 接收消息
@@ -40,7 +40,7 @@ declare class MQ {
    * @param {any} callback
    * @memberof MQ
    */
-  async subscribe(options: amqp.SubscribeOptions, callback: amqp.SubscribeCallback): void;
+   subscribe(options: amqp.SubscribeOptions, callback: amqp.SubscribeCallback): void;
 
   /**
    * 接收消息(异步)
@@ -49,6 +49,6 @@ declare class MQ {
    * @param {any} callback
    * @memberof MQ
    */
-  subscribeAsync(options: amqp.SubscribeOptions): Promise<T>;
+  async subscribeAsync(options: amqp.SubscribeOptions): Promise<any>;
 }
 export default MQ;
