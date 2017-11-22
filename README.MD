@@ -38,9 +38,13 @@ npm install --save cw-rabbitmq
       console.info(`MQ心跳监测异常${err.toString()}`);
     });
 
-    mq.subscribe().then((result) => {
+    mq.subscribeAsync().then((result) => {
       
       result.ack.acknowledge(true);
-    })
+    });
+
+    mq.subscribe((message, headers, deliveryInfo, ack) => {
+      ack.acknowledge(true);
+    });
 ```
 
