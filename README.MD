@@ -8,11 +8,11 @@ npm install --save cw-rabbitmq
 ## 使用方法
 ```javascript
     const connConfig = {
-      host: '192.168.2.163',
+      host: '',
       port: 5672,
-      login: 'ciwong2017',
-      password: '123456',
-      vhost: 'ciwong_vhost',
+      login: '',
+      password: '',
+      vhost: '',
       reconnect: true,
       reconnectBackoffTime: 10000, // 10秒尝试连接一次
     };
@@ -39,7 +39,6 @@ npm install --save cw-rabbitmq
     });
 
     mq.subscribeAsync().then((result) => {
-      
       result.ack.acknowledge(true);
     });
 
