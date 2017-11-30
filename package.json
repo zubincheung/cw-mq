@@ -4,7 +4,7 @@
   "description": "rebbitmq组件",
   "main": "index.js",
   "scripts": {
-    "publish": "npm publish . ----registry=https://registry.npmjs.org/",
+    "publish": "npm publish . --registry=https://registry.npmjs.org/",
     "test": "mocha --recursive  test/**/*.test.js"
   },
   "repository": {

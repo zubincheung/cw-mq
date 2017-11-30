@@ -3,9 +3,9 @@ import * as amqp from 'amqp';
 
 declare interface IMQOptions {
   exchangeName: string;
-  exchangeOption: amqp.ExchangeOptions;
+  exchangeOption?: amqp.ExchangeOptions;
   queueName: string;
-  queueOption: amqp.QueueOptions;
+  queueOption?: amqp.QueueOptions;
 }
 
 /**
