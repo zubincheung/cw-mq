@@ -4,6 +4,17 @@
 
 const amqp = require('amqp');
 
+const defaultExchangeOption = {
+  type: 'direct',
+  autoDelete: false,
+  confirm: true,
+};
+
+const defaultQueueOption = {
+  durable: true,
+  autoDelete: false,
+};
+
 /**
  * mq类
  */
@@ -16,6 +27,9 @@ class MQ {
    * @memberof MQ
    */
   constructor(connOptions, { exchangeName, exchangeOption, queueName, queueOption }) {
+    exchangeOption = Object.assign(defaultExchangeOption, exchangeOption || {});
+    queueOption = Object.assign(defaultQueueOption, queueOption);
+
     const conn = amqp.createConnection(connOptions);
 
     conn.on('close', () => {

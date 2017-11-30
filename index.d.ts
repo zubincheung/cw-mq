@@ -32,7 +32,7 @@ declare class MQ {
    * @returns
    * @memberof MQ
    */
-  publishMsg(body: string, options?: {}): Promise<any>;
+  publishMsg(body: string | Buffer, options?: {}): Promise<any>;
 
   /**
    * 接收消息
@@ -54,4 +54,4 @@ declare class MQ {
 }
 export = MQ;
 
-declare module MQ {}
+declare module MQ { }

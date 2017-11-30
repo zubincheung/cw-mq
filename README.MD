@@ -18,13 +18,13 @@ npm install --save cw-rabbitmq
     };
     const options = {
       exchangeName: 'exTest',
-      exchangeOption: {
+      exchangeOption: {  // ke选
         type: 'direct',
         autoDelete: false,
         confirm: true,
       },
       queueName: 'test',
-      queueOption: {
+      queueOption: { // 可选
         durable: true,
         autoDelete: false,
       },

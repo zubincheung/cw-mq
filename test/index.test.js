@@ -12,16 +12,7 @@ const connConfig = {
 };
 const options = {
   exchangeName: 'exTest',
-  exchangeOption: {
-    type: 'direct',
-    autoDelete: false,
-    confirm: true,
-  },
   queueName: 'test',
-  queueOption: {
-    durable: true,
-    autoDelete: false,
-  },
 }
 
 const mq = new MQ(connConfig, options);
