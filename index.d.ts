@@ -42,6 +42,7 @@ declare class MQ {
    * @memberof MQ
    */
   subscribe(options: amqp.SubscribeOptions, callback: amqp.SubscribeCallback): void;
+  subscribe(callback: amqp.SubscribeCallback): void;
 
   /**
    * 接收消息(异步)
