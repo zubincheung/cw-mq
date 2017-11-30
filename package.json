@@ -1,6 +1,6 @@
 {
   "name": "cw-rabbitmq",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "rebbitmq组件",
   "main": "index.js",
   "scripts": {
