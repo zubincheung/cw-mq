@@ -8,6 +8,13 @@ declare interface IMQOptions {
   queueOption?: amqp.QueueOptions;
 }
 
+declare interface ISubscribeData{
+  message: any,
+  headers: { [key: string]: any },
+  deliveryInfo: amqp.DeliveryInfo,
+  ack: amqp.Ack
+}
+
 /**
  * mq类
  */
@@ -51,7 +58,7 @@ declare class MQ {
    * @param {any} callback
    * @memberof MQ
    */
-  subscribeAsync(options: amqp.SubscribeOptions): Promise<any>;
+  subscribeAsync(options: amqp.SubscribeOptions): Promise<ISubscribeData>;
 }
 export = MQ;
 
