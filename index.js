@@ -13,6 +13,7 @@ const defaultExchangeOption = {
 const defaultQueueOption = {
   durable: true,
   autoDelete: false,
+  closeChannelOnUnsubscribe: true,
 };
 
 /**
