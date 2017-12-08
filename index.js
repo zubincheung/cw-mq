@@ -15,6 +15,10 @@ const defaultQueueOption = {
   autoDelete: false,
   closeChannelOnUnsubscribe: true,
 };
+Object.freeze(defaultExchangeOption);
+Object.freeze(defaultQueueOption);
+
+let _conn = null;
 
 /**
  * mq类
@@ -28,10 +32,10 @@ class MQ {
    * @memberof MQ
    */
   constructor(connOptions, { exchangeName, exchangeOption, queueName, queueOption }) {
-    exchangeOption = Object.assign(defaultExchangeOption, exchangeOption || {});
-    queueOption = Object.assign(defaultQueueOption, queueOption);
+    const _exchangeOption = Object.assign({}, defaultExchangeOption, exchangeOption || {});
+    const _queueOption = Object.assign({}, defaultQueueOption, queueOption);
 
-    const conn = amqp.createConnection(connOptions);
+    const conn = _conn = _conn || amqp.createConnection(connOptions);
 
     conn.on('close', () => {
       this.ready = false;
@@ -39,14 +43,14 @@ class MQ {
     });
 
     conn.on('ready', () => {
-      this.exchangeSubmit = conn.exchange(exchangeName, exchangeOption);
+      this.exchangeSubmit = conn.exchange(exchangeName, _exchangeOption);
       this.exchangeSubmit.on('open', () => {
         this.ready = true;
-        const queue = conn.queue(queueName, queueOption, _queue => {
+        const queue = conn.queue(queueName, _queueOption, _queue => {
           queue.bind(exchangeName, '', () => {
             this.ready = true;
             this.queue = queue;
-            this.isConfirm = exchangeOption.confirm || false;
+            this.isConfirm = _exchangeOption.confirm || false;
             console.info('rabbitMQ connection success!');
           });
         });
