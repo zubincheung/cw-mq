@@ -39,7 +39,7 @@ class MQ {
 
     conn.on('close', () => {
       this.ready = false;
-      console.info('rabbitMQ has closed...');
+      console.info(`${queueName} has closed...`);
     });
 
     conn.on('ready', () => {
@@ -51,7 +51,7 @@ class MQ {
             this.ready = true;
             this.queue = queue;
             this.isConfirm = _exchangeOption.confirm || false;
-            console.info('rabbitMQ connection success!');
+            console.info(`${queueName} connection success!`);
           });
         });
       });
@@ -59,12 +59,12 @@ class MQ {
 
     conn.on('error', (err) => {
       this.ready = false;
-      console.info(`rabbitMQ error,${err.toString()}`);
+      console.info(`${queueName} error,${err.toString()}`);
     });
 
     conn.on('disconnect', () => {
       this.ready = false;
-      console.info('rabbitMQ disconnect');
+      console.info(`${queueName} disconnect`);
     });
   }
 
