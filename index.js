@@ -6,7 +6,7 @@ const Debug = require('debug');
 const { getUrl } = require('./lib/url');
 const { getOptions } = require('./lib/options');
 
-const debug = Debug('cw-rabbitmq:');
+let debug = Debug('cw-rabbitmq:');
 
 const INIR_CHANNEL = Symbol('MQ#INIR_CHANNEL');
 
@@ -17,13 +17,8 @@ const OPTIONS = Symbol('MQ#OPTIONS');
 class MQ {
   constructor(connOptions, options) {
     this[URL] = getUrl(connOptions);
-
     this[OPTIONS] = getOptions(options);
-    debug(`options:`, options);
-
     this[CH] = null;
-
-    this[INIR_CHANNEL]();
   }
 
   /**
@@ -57,7 +52,6 @@ class MQ {
     debug('bindQueue', this[OPTIONS].queueName, this[OPTIONS].exchangeName, 'routekey:""');
     await ch.bindQueue(this[OPTIONS].queueName, this[OPTIONS].exchangeName, '');
 
-    console.info(`${this[OPTIONS].queueName} connection success!`);
     this[CH] = ch;
     return ch;
   }
