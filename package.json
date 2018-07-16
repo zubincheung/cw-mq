@@ -18,9 +18,11 @@
   "author": "Zubin",
   "license": "MIT",
   "dependencies": {
-    "amqp": "^0.2.6"
+    "amqplib": "^0.5.2",
+    "debug": "^3.1.0"
   },
   "devDependencies": {
+    "@types/amqplib": "^0.5.8",
     "chai": "^4.1.2",
     "mocha": "^4.0.1"
   }

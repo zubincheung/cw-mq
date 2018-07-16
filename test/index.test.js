@@ -13,34 +13,25 @@ const connConfig = {
 const options = {
   exchangeName: 'exTest',
   queueName: 'test',
-}
+};
 
-const mq = new MQ(connConfig, options);
+const mq = MQ.getInstance(connConfig, options);
 
 describe('mq test', () => {
   it('publishMsg:', () => {
-
-    return mq.publishMsg('heartbeat-test').then((result) => {
-      expect(result).to.be.true;
-    }).catch((err) => {
-      expect(err).to.be.null;
-    });
+    return mq
+      .publishMsg('heartbeat-test')
+      .then(result => {
+        expect(result).to.be.true;
+      })
+      .catch(err => {
+        expect(err).to.be.null;
+      });
   });
 
-  it('subscribeAsync:', () => {
-    return mq.subscribeAsync().then((result) => {
-      expect(result.message.data.toString()).to.be.eq('heartbeat-test')
-      result.ack.acknowledge(true);
-    }).catch((err) => {
-      expect(err).to.be.null;
-    });
-  });
-
-  it('subscribe:', done => {
-    mq.subscribe((message, headers, deliveryInfo, ack) => {
-      expect(message.data.toString()).to.be.eq('heartbeat-test')
-      ack.acknowledge(true);
-      done();
+  it('subscribe:', () => {
+    return mq.subscribe(async (message, headers) => {
+      expect(message).to.be.eq('heartbeat-test');
     });
   });
 });

@@ -1,141 +1,112 @@
-/*
- * Created by Zubin on 2017-10-17 11:32:58
- */
+// Create by Zubin on 2018-07-16 10:08:49
 
-const amqp = require('amqp');
+const amqp = require('amqplib');
+const Debug = require('debug');
 
-const defaultExchangeOption = {
-  type: 'direct',
-  autoDelete: false,
-  confirm: true,
-};
+const { getUrl } = require('./lib/url');
+const { getOptions } = require('./lib/options');
 
-const defaultQueueOption = {
-  durable: true,
-  autoDelete: false,
-  closeChannelOnUnsubscribe: true,
-};
-Object.freeze(defaultExchangeOption);
-Object.freeze(defaultQueueOption);
+const debug = Debug('cw-rabbitmq:');
 
-let _conn = null;
+const INIR_CHANNEL = Symbol('MQ#INIR_CHANNEL');
 
-/**
- * mq类
- */
+const CONN = Symbol('MQ#CONN');
+const URL = Symbol('MQ#URL');
+const OPTIONS = Symbol('MQ#OPTIONS');
+const INSTANCE = Symbol('MQ#INSTANCE');
+
 class MQ {
   /**
-   * 实例化mq类
-   * 
+   * 获取mq实例
+   *
    * @param {amqp.ConnectionOptions} connOptions 连接配置
-   * @param {IMQOptions} options 
+   * @param {IMQOptions} options
    * @memberof MQ
    */
-  constructor(connOptions, { exchangeName, exchangeOption, queueName, queueOption }) {
-    const _exchangeOption = Object.assign({}, defaultExchangeOption, exchangeOption || {});
-    const _queueOption = Object.assign({}, defaultQueueOption, queueOption);
+  static getInstance(connOptions, options) {
+    if (!this[INSTANCE]) {
+      this[INSTANCE] = new MQ(connOptions, options);
+    }
+    return this[INSTANCE];
+  }
 
-    const conn = _conn = _conn || amqp.createConnection(connOptions);
+  constructor(connOptions, options) {
+    this[URL] = getUrl(connOptions);
+    debug('url：', `${this[URL]}`);
 
-    conn.on('close', () => {
-      this.ready = false;
-      console.info(`${queueName} has closed...`);
-    });
+    this[OPTIONS] = getOptions(options);
+    debug(`options:`, options);
 
-    conn.on('ready', () => {
-      this.exchangeSubmit = conn.exchange(exchangeName, _exchangeOption);
-      this.exchangeSubmit.on('open', () => {
-        this.ready = true;
-        const queue = conn.queue(queueName, _queueOption, _queue => {
-          queue.bind(exchangeName, '', () => {
-            this.ready = true;
-            this.queue = queue;
-            this.isConfirm = _exchangeOption.confirm || false;
-            console.info(`${queueName} connection success!`);
-          });
-        });
-      });
-    });
+    this[CONN] = null;
+    this.instance = null;
+  }
 
-    conn.on('error', (err) => {
-      this.ready = false;
-      console.info(`${queueName} error,${err.toString()}`);
-    });
+  /**
+   * 初始化channel
+   *
+   * @returns
+   * @memberof MQ
+   */
+  async [INIR_CHANNEL]() {
+    if (!this[CONN]) this[CONN] = await amqp.connect(this[URL]);
 
-    conn.on('disconnect', () => {
-      this.ready = false;
-      console.info(`${queueName} disconnect`);
-    });
+    const ch = await this[CONN].createChannel();
+
+    await ch.assertExchange(
+      this[OPTIONS].exchangeName,
+      this[OPTIONS].exchangeOption.type,
+      this[OPTIONS].exchangeOption,
+    );
+
+    await ch.assertQueue(this[OPTIONS].queueName, this[OPTIONS].queueOption);
+
+    await ch.bindQueue(this[OPTIONS].queueName, this[OPTIONS].exchangeName, '');
+
+    return ch;
   }
 
   /**
    * 发布消息
    *
-   * @param {any} body
-   * @param {any} [options={}]
+   * @param {*} body
+   * @param {*} [options={}]
    * @returns
    * @memberof MQ
    */
-  publishMsg(body, options = {}) {
-    return new Promise(((resolve, reject) => {
-      if (!this.ready || !this.exchangeSubmit) {
-        setTimeout(() => {
-          resolve(this.publishMsg(body, options));
-        }, 1000);
-      } else {
-        this.exchangeSubmit.publish('', body, options || {}, (ret, err) => {
-          if (err) {
-            return reject(err);
-          }
-          return resolve(!ret);
-        });
-      }
-    }));
+  async publishMsg(body, options = {}) {
+    const ch = await this[INIR_CHANNEL]();
+    return ch.publish(this[OPTIONS].exchangeName, '', Buffer.from(body), options);
   }
 
   /**
- * 接收消息
- *
- * @param {any} options
- * @param {any} callback
- * @memberof MQ
- */
-  subscribeAsync(options = {}) {
-    return new Promise((resolve, reject) => {
-      if (this.queue) {
-        if (this.isConfirm) options.ack = true;
-        this.queue.subscribe(options, (message, headers, deliveryInfo, ack) => {
-          // console.log(message.data.toString(), headers, deliveryInfo);
-          try {
-            resolve({ message, headers, deliveryInfo, ack });
-          } catch (error) {
-            reject(error);
-          }
-        });
-      } else {
-        setTimeout(() => {
-          resolve(this.subscribeAsync(options));
-        }, 1000);
-      }
-    });
-  }
-
-  /**
-   * 接收消息
+   * 订阅消息
    *
-   * @param {any} options
-   * @param {any} callback
+   * @param {*} options
+   * @param {*} fn
    * @memberof MQ
    */
-  subscribe(options = {}, callback) {
-    if (this.queue) {
-      if (this.isConfirm) options.ack = true;
-      this.queue.subscribe(options, callback);
-    } else {
-      setTimeout(() => {
-        this.subscribe(options, callback);
-      }, 1000);
+  async subscribe(options, fn) {
+    if (typeof options == 'function') {
+      fn = options;
+      options = {};
     }
+
+    const ch = await this[INIR_CHANNEL]();
+
+    await ch.consume(
+      this[OPTIONS].queueName,
+      async msg => {
+        const {
+          content,
+          fields,
+          properties: { headers },
+        } = msg;
+
+        await fn(content.toString(), headers, fields).catch();
+        return ch.ack(msg);
+      },
+      { noAck: false, ...options },
+    );
   }
 }
 

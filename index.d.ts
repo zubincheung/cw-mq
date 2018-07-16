@@ -1,18 +1,18 @@
 /// <reference types="node" />
-import * as amqp from 'amqp';
+import * as amqp from 'amqplib';
 
 declare interface IMQOptions {
   exchangeName: string;
-  exchangeOption?: amqp.ExchangeOptions;
+  exchangeOption?: amqp.Options.AssertExchange;
   queueName: string;
-  queueOption?: amqp.QueueOptions;
+  queueOption?: amqp.Options.AssertQueue;
 }
 
-declare interface ISubscribeData{
-  message: any,
-  headers: { [key: string]: any },
-  deliveryInfo: amqp.DeliveryInfo,
-  ack: amqp.Ack
+declare interface ISubscribeData {
+  message: any;
+  headers: { [key: string]: any };
+  deliveryInfo: amqp.DeliveryInfo;
+  ack: amqp.Ack;
 }
 
 /**
@@ -23,10 +23,19 @@ declare class MQ {
   private exchangeSubmit;
 
   /**
-   * 实例化mq类
-   * 
+   * 获取mq实例
+   *
    * @param {amqp.ConnectionOptions} connOptions 连接配置
-   * @param {IMQOptions} options 
+   * @param {IMQOptions} options
+   * @memberof MQ
+   */
+  static getInstance(connOptions: amqp.ConnectionOptions, options: IMQOptions): MQ;
+
+  /**
+   * 实例化mq类
+   *
+   * @param {amqp.ConnectionOptions} connOptions 连接配置
+   * @param {IMQOptions} options
    * @memberof MQ
    */
   constructor(connOptions: amqp.ConnectionOptions, options: IMQOptions);
@@ -39,7 +48,7 @@ declare class MQ {
    * @returns
    * @memberof MQ
    */
-  publishMsg(body: string | Buffer, options?: {}): Promise<any>;
+  publishMsg(body: string | Buffer, options?: amqp.Options.Publish): Promise<any>;
 
   /**
    * 接收消息
@@ -48,18 +57,13 @@ declare class MQ {
    * @param {any} callback
    * @memberof MQ
    */
-  subscribe(options: amqp.SubscribeOptions, callback: amqp.SubscribeCallback): void;
-  subscribe(callback: amqp.SubscribeCallback): void;
-
-  /**
-   * 接收消息(异步)
-   *
-   * @param {any} options
-   * @param {any} callback
-   * @memberof MQ
-   */
-  subscribeAsync(options: amqp.SubscribeOptions): Promise<ISubscribeData>;
+  subscribe(
+    options: amqp.Options.Consume,
+    callback: (message, headers, fields) => {},
+  ): Promise<void>;
 }
 export = MQ;
 
-declare module MQ { }
+declare namespace MQ {
+
+}
