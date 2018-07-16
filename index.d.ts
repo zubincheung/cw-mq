@@ -21,16 +21,6 @@ declare interface ISubscribeData {
 declare class MQ {
   private ready;
   private exchangeSubmit;
-
-  /**
-   * 获取mq实例
-   *
-   * @param {amqp.ConnectionOptions} connOptions 连接配置
-   * @param {IMQOptions} options
-   * @memberof MQ
-   */
-  static getInstance(connOptions: amqp.ConnectionOptions, options: IMQOptions): MQ;
-
   /**
    * 实例化mq类
    *

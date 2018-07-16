@@ -13,23 +13,8 @@ const INIR_CHANNEL = Symbol('MQ#INIR_CHANNEL');
 const CH = Symbol('MQ#CONN');
 const URL = Symbol('MQ#URL');
 const OPTIONS = Symbol('MQ#OPTIONS');
-const INSTANCE = Symbol('MQ#INSTANCE');
 
 class MQ {
-  /**
-   * 获取mq实例
-   *
-   * @param {amqp.ConnectionOptions} connOptions 连接配置
-   * @param {IMQOptions} options
-   * @memberof MQ
-   */
-  static getInstance(connOptions, options) {
-    if (!this[INSTANCE]) {
-      this[INSTANCE] = new MQ(connOptions, options);
-    }
-    return this[INSTANCE];
-  }
-
   constructor(connOptions, options) {
     this[URL] = getUrl(connOptions);
 
