@@ -97,7 +97,7 @@ class MQ {
           properties: { headers },
         } = msg;
 
-        await fn(content && content.toString(), headers, fields).catch();
+        await fn(content && content.toString(), headers || {}, fields || {}).catch(console.error);
         return ch.ack(msg);
       },
       { noAck: false, ...options },
