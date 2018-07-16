@@ -37,7 +37,6 @@ class MQ {
     debug(`options:`, options);
 
     this[CH] = null;
-    this.instance = null;
 
     this[INIR_CHANNEL]();
   }
