@@ -10,7 +10,7 @@ const debug = Debug('cw-rabbitmq:');
 
 const INIR_CHANNEL = Symbol('MQ#INIR_CHANNEL');
 
-const CONN = Symbol('MQ#CONN');
+const CH = Symbol('MQ#CONN');
 const URL = Symbol('MQ#URL');
 const OPTIONS = Symbol('MQ#OPTIONS');
 const INSTANCE = Symbol('MQ#INSTANCE');
@@ -36,8 +36,10 @@ class MQ {
     this[OPTIONS] = getOptions(options);
     debug(`options:`, options);
 
-    this[CONN] = null;
+    this[CH] = null;
     this.instance = null;
+
+    this[INIR_CHANNEL]();
   }
 
   /**
@@ -48,10 +50,10 @@ class MQ {
    */
   async [INIR_CHANNEL]() {
     debug(`connect rabbitmq, url：${this[URL]}`);
-    if (!this[CONN]) this[CONN] = await amqp.connect(this[URL]);
+    const conn = await amqp.connect(this[URL]);
 
     debug('createChannel');
-    const ch = await this[CONN].createChannel();
+    const ch = await conn.createChannel();
 
     debug(
       'assertExchange:',
@@ -72,7 +74,7 @@ class MQ {
     await ch.bindQueue(this[OPTIONS].queueName, this[OPTIONS].exchangeName, '');
 
     console.info(`${this[OPTIONS].queueName} connection success!`);
-
+    this[CH] = ch;
     return ch;
   }
 
@@ -85,7 +87,7 @@ class MQ {
    * @memberof MQ
    */
   async publishMsg(body, options = {}) {
-    const ch = await this[INIR_CHANNEL]();
+    const ch = this[CH] || (await this[INIR_CHANNEL]());
     debug(`publish：${this[OPTIONS].exchangeName},msg:${body}`);
     return ch.publish(this[OPTIONS].exchangeName, '', Buffer.from(body), options);
   }
@@ -103,7 +105,7 @@ class MQ {
       options = {};
     }
 
-    const ch = await this[INIR_CHANNEL]();
+    const ch = this[CH] || (await this[INIR_CHANNEL]());
 
     await ch.consume(
       this[OPTIONS].queueName,
