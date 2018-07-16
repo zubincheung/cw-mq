@@ -51,6 +51,7 @@ declare class MQ {
     options: amqp.Options.Consume,
     callback: (message, headers, fields) => {},
   ): Promise<void>;
+  subscribe(callback: (message, headers, fields) => {}): Promise<void>;
 }
 export = MQ;
 
