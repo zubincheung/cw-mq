@@ -19,6 +19,8 @@ class MQ {
     this[URL] = getUrl(connOptions);
     this[OPTIONS] = getOptions(options);
     this[CH] = null;
+
+    console.info(`${this[OPTIONS].queueName} connecting!`);
   }
 
   /**
