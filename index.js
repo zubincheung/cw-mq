@@ -32,7 +32,6 @@ class MQ {
 
   constructor(connOptions, options) {
     this[URL] = getUrl(connOptions);
-    debug('url：', `${this[URL]}`);
 
     this[OPTIONS] = getOptions(options);
     debug(`options:`, options);
@@ -48,19 +47,31 @@ class MQ {
    * @memberof MQ
    */
   async [INIR_CHANNEL]() {
+    debug(`connect rabbitmq, url：${this[URL]}`);
     if (!this[CONN]) this[CONN] = await amqp.connect(this[URL]);
 
+    debug('createChannel');
     const ch = await this[CONN].createChannel();
 
+    debug(
+      'assertExchange:',
+      this[OPTIONS].exchangeName,
+      this[OPTIONS].exchangeOption.type,
+      this[OPTIONS].exchangeOption,
+    );
     await ch.assertExchange(
       this[OPTIONS].exchangeName,
       this[OPTIONS].exchangeOption.type,
       this[OPTIONS].exchangeOption,
     );
 
+    debug('assertQueue:', this[OPTIONS].queueName, this[OPTIONS].queueOption);
     await ch.assertQueue(this[OPTIONS].queueName, this[OPTIONS].queueOption);
 
+    debug('bindQueue', this[OPTIONS].queueName, this[OPTIONS].exchangeName, 'routekey:""');
     await ch.bindQueue(this[OPTIONS].queueName, this[OPTIONS].exchangeName, '');
+
+    console.info(`${this[OPTIONS].queueName} connection success!`);
 
     return ch;
   }
@@ -75,6 +86,7 @@ class MQ {
    */
   async publishMsg(body, options = {}) {
     const ch = await this[INIR_CHANNEL]();
+    debug(`publish：${this[OPTIONS].exchangeName},msg:${body}`);
     return ch.publish(this[OPTIONS].exchangeName, '', Buffer.from(body), options);
   }
 
@@ -96,6 +108,7 @@ class MQ {
     await ch.consume(
       this[OPTIONS].queueName,
       async msg => {
+        debug('consume:', msg);
         const {
           content,
           fields,
