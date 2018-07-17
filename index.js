@@ -3,22 +3,25 @@
 const amqp = require('amqplib');
 const Debug = require('debug');
 
-const { getUrl } = require('./lib/url');
+const { getConnOptions } = require('./lib/url');
 const { getOptions } = require('./lib/options');
 
 let debug = Debug('cw-rabbitmq:');
 
 const INIR_CHANNEL = Symbol('MQ#INIR_CHANNEL');
 
-const CH = Symbol('MQ#CONN');
-const URL = Symbol('MQ#URL');
+const CONN = Symbol('MQ#CONN');
+const CONNOPTION = Symbol('MQ#CONNOPTION');
 const OPTIONS = Symbol('MQ#OPTIONS');
+
+const pool = {};
 
 class MQ {
   constructor(connOptions, options) {
-    this[URL] = getUrl(connOptions);
+    this[CONNOPTION] = getConnOptions(connOptions);
     this[OPTIONS] = getOptions(options);
-    this[CH] = null;
+
+    this.queueName = this[OPTIONS].queueName;
 
     console.info(`${this[OPTIONS].queueName} connecting!`);
   }
@@ -30,11 +33,13 @@ class MQ {
    * @memberof MQ
    */
   async [INIR_CHANNEL]() {
-    debug(`connect rabbitmq, url：${this[URL]}`);
-    const conn = await amqp.connect(this[URL]);
+    if (!pool[CONN]) {
+      debug(`connect rabbitmq, params：`, this[CONNOPTION]);
+      pool[CONN] = await amqp.connect(this[CONNOPTION]);
+    }
 
-    debug('createChannel');
-    const ch = await conn.createChannel();
+    debug('create channel');
+    const ch = await pool[CONN].createChannel();
 
     debug(
       'assertExchange:',
@@ -54,7 +59,7 @@ class MQ {
     debug('bindQueue', this[OPTIONS].queueName, this[OPTIONS].exchangeName, 'routekey:""');
     await ch.bindQueue(this[OPTIONS].queueName, this[OPTIONS].exchangeName, '');
 
-    this[CH] = ch;
+    pool[this.queueName] = ch;
     return ch;
   }
 
@@ -67,7 +72,7 @@ class MQ {
    * @memberof MQ
    */
   async publishMsg(body, options = {}) {
-    const ch = this[CH] || (await this[INIR_CHANNEL]());
+    const ch = pool[this.queueName] || (await this[INIR_CHANNEL]());
     debug(`publish：${this[OPTIONS].exchangeName},msg:${body}`);
     return ch.publish(this[OPTIONS].exchangeName, '', Buffer.from(body), options);
   }
@@ -85,7 +90,7 @@ class MQ {
       options = {};
     }
 
-    const ch = this[CH] || (await this[INIR_CHANNEL]());
+    const ch = pool[this.queueName] || (await this[INIR_CHANNEL]());
 
     await ch.consume(
       this[OPTIONS].queueName,
