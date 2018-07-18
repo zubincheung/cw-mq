@@ -3,18 +3,15 @@
 const amqp = require('amqplib');
 const Debug = require('debug');
 
-const { getConnOptions } = require('./lib/url');
 const { getOptions } = require('./lib/options');
+const Connection = require('./lib/connection');
 
-let debug = Debug('cw-rabbitmq:');
+let debug = Debug('cw-rabbitmq:MQ');
 
 const INIT_CHANNEL = Symbol('MQ#INIT_CHANNEL');
-const INIT_CONN = Symbol('MQ#INIT_CONN');
-const GET_CONN = Symbol('MQ#GET_CONN');
-
 const CONN = Symbol('MQ#CONN');
-const CONNOPTION = Symbol('MQ#CONNOPTION');
 const OPTIONS = Symbol('MQ#OPTIONS');
+const CONN_OPTIONS = Symbol('MQ#CONN_OPTIONS');
 
 const pool = {};
 
@@ -28,12 +25,10 @@ class MQ {
   }
 
   constructor(connOptions, options) {
-    this[CONNOPTION] = getConnOptions(connOptions);
     this[OPTIONS] = getOptions(options);
+    this[CONN_OPTIONS] = connOptions;
 
     this.queueName = this[OPTIONS].queueName;
-
-    this[INIT_CONN]();
   }
 
   /**
@@ -44,7 +39,7 @@ class MQ {
    */
   async [INIT_CHANNEL]() {
     try {
-      const conn = await this[GET_CONN]();
+      const conn = await Connection.getConnection(this[CONN_OPTIONS]);
 
       debug('create channel');
       const ch = await conn.createChannel();
@@ -81,38 +76,12 @@ class MQ {
     }
   }
 
-  async [INIT_CONN]() {
-    if (!pool[CONN]) {
-      debug(`connect rabbitmq, params：`, this[CONNOPTION]);
-      pool[CONN] = await amqp.connect(this[CONNOPTION]);
-
-      console.info(`${this[OPTIONS].queueName} connecting!`);
-
-      pool[CONN].on('error', function(err) {
-        pool[CONN].close();
-      });
-    }
-  }
-
-  async [GET_CONN]() {
-    const self = this;
-    return new Promise(resolve => {
-      if (!pool[CONN]) {
-        setTimeout(() => {
-          resolve(self[GET_CONN]());
-        }, 100);
-        return;
-      }
-      resolve(pool[CONN]);
-    });
-  }
-
   /**
    * 发布消息
    *
    * @param {*} body
    * @param {*} [options={}]
-   * @returns
+   * @returns 是否发送成果
    * @memberof MQ
    */
   async publishMsg(body, options = {}) {
