@@ -2,11 +2,11 @@ const MQ = require('../index');
 const { expect } = require('chai');
 
 const connConfig = {
-  host: '192.168.2.163',
+  host: '192.168.8.18',
   port: 5672,
-  login: 'ciwong2017',
+  login: 'epaperapi',
   password: '123456',
-  vhost: 'ciwong_vhost',
+  vhost: 'epaperapi_dev',
   reconnect: true,
   reconnectBackoffTime: 10000, // 10秒尝试连接一次
 };
