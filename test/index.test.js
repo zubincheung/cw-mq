@@ -35,7 +35,14 @@ describe('mq test', () => {
 
   it('subscribe:', () => {
     return mq.subscribe(async (message, headers) => {
-      // expect(message).to.be.eq('heartbeat-test');
+      expect(!!message).to.be.true;
     });
   });
 });
+
+// for (let i = 0; i < 10000; i++) {
+//   new MQ(connConfig, options)
+//     .publishMsg('2---' + i)
+//     // .then(console.log)
+//     .catch(console.error);
+// }

@@ -1,6 +1,6 @@
 // Create by Zubin on 2018-07-16 10:08:49
-
-const amqp = require('amqplib');
+const Promise = require('bluebird');
+// const amqp = require('amqplib');
 const Debug = require('debug');
 
 const { getOptions } = require('./lib/options');
@@ -12,8 +12,6 @@ const INIT_CHANNEL = Symbol('MQ#INIT_CHANNEL');
 const CONN = Symbol('MQ#CONN');
 const OPTIONS = Symbol('MQ#OPTIONS');
 const CONN_OPTIONS = Symbol('MQ#CONN_OPTIONS');
-
-const pool = {};
 
 class MQ {
   static getInstance(connOptions, options) {
@@ -37,13 +35,24 @@ class MQ {
    * @returns
    * @memberof MQ
    */
-  async [INIT_CHANNEL]() {
+  async [INIT_CHANNEL](count = 0) {
+    const conn = await Connection.connect(this[CONN_OPTIONS]);
+    let ch = null;
+
+    // 建立一个channel,如果创建channel失败,重试100次
     try {
-      const conn = await Connection.getConnection(this[CONN_OPTIONS]);
-
       debug('create channel');
-      const ch = await conn.createChannel();
+      ch = await conn.createChannel();
+    } catch (error) {
+      count++;
+      await Promise.delay(300);
+      if (count < 100) {
+        return this[INIT_CHANNEL](count);
+      }
+      throw error;
+    }
 
+    try {
       debug(
         'assertExchange:',
         this[OPTIONS].exchangeName,
@@ -64,14 +73,8 @@ class MQ {
 
       return ch;
     } catch (err) {
-      if (pool[this.queueName]) {
-        await pool[this.queueName].close();
-        pool[this.queueName] = null;
-      }
-      if (pool[CONN]) {
-        await pool[CONN].close();
-        pool[CONN] = null;
-      }
+      // await ch.close();
+      await Connection.close(conn);
       throw err;
     }
   }
@@ -108,8 +111,7 @@ class MQ {
       options = {};
     }
 
-    pool[this.queueName] = pool[this.queueName] || (await this[INIT_CHANNEL]());
-    const ch = pool[this.queueName];
+    const ch = await this[INIT_CHANNEL]();
 
     await ch.consume(
       this[OPTIONS].queueName,
@@ -123,11 +125,8 @@ class MQ {
 
         try {
           await fn(content && content.toString(), headers || {}, fields || {});
+        } finally {
           await ch.ack(msg);
-        } catch (error) {
-          console.error(error);
-          pool[this.queueName] = null;
-          await ch.close();
         }
       },
       { noAck: false, ...options },
