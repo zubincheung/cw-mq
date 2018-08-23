@@ -1,4 +1,5 @@
 const MQ = require('../index');
+const amqp = require('amqplib');
 
 const connConfig = {};
 
@@ -25,8 +26,9 @@ describe('mq test', () => {
   });
 
   it('subscribe:', async () => {
-    await mq.subscribe(async (message, headers) => {
-      expect(!!message).toBeTruthy();
+    await mq.subscribe(async (msg, headers, ch) => {
+      expect(msg.content.toString()).toBe('heartbeat-test');
+      expect(headers).toEqual({});
     });
   });
 });

@@ -62,7 +62,7 @@ const mq = new MQ(connConfig, options);
 
 mq.publishMsg('hello world');
 
-mq.subscribe((message, headers, ch) => {
-  console.log(message);
+mq.subscribe((msg, headers, ch) => {
+  console.log(msg.content.toString());
 });
 ```

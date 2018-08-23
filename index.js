@@ -92,12 +92,11 @@ class MQ {
 
     debug('consume:', msg);
     const {
-      content,
       properties: { headers },
     } = msg;
 
     try {
-      await onMessage(content && content.toString(), headers, ch);
+      await onMessage(msg, headers, ch);
     } finally {
       await ch.ack(msg);
     }

@@ -8,13 +8,6 @@ declare interface IMQOptions {
   queueOption?: amqp.Options.AssertQueue;
 }
 
-declare interface ISubscribeData {
-  message: any;
-  headers: { [key: string]: any };
-  deliveryInfo: amqp.DeliveryInfo;
-  ack: amqp.Ack;
-}
-
 /**
  * mq类
  */
@@ -27,11 +20,11 @@ declare class MQ {
   /**
    * 实例化mq类
    *
-   * @param {amqp.ConnectionOptions} connOptions 连接配置
+   * @param {amqp.Options.Connect} connOptions 连接配置
    * @param {IMQOptions} options
    * @memberof MQ
    */
-  constructor(connOptions: amqp.ConnectionOptions, options: IMQOptions);
+  constructor(connOptions: amqp.Options.Connect, options: IMQOptions);
 
   /**
    *  新建一个channel
@@ -51,12 +44,15 @@ declare class MQ {
   /**
    * 订阅消息
    *
-   * @param {((msg: Message | null) => any)} onMessage 订阅方法
+   * @param {((msg: amqp.Message | null, header: any, ch: amqp.Channel) => any)} onMessage 订阅方法
    * @param {amqp.Options.Consume} [options] 订阅配置
    * @returns {Promise<void>}
    * @memberof MQ
    */
-  subscribe(onMessage: (msg: Message | null) => any, options?: amqp.Options.Consume): Promise<void>;
+  subscribe(
+    onMessage: (msg: amqp.Message | null, header: any, ch: amqp.Channel) => any,
+    options?: amqp.Options.Consume,
+  ): Promise<void>;
 }
 export = MQ;
 
