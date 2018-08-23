@@ -21,6 +21,9 @@ declare interface ISubscribeData {
 declare class MQ {
   private ready;
   private exchangeSubmit;
+
+  conn: amqp.Connection;
+
   /**
    * 实例化mq类
    *
@@ -29,6 +32,11 @@ declare class MQ {
    * @memberof MQ
    */
   constructor(connOptions: amqp.ConnectionOptions, options: IMQOptions);
+
+  /**
+   *  新建一个channel
+   */
+  createChannel(): Promise<amqp.Channel>;
 
   /**
    * 发布消息
@@ -41,17 +49,14 @@ declare class MQ {
   publishMsg(body: string | Buffer, options?: amqp.Options.Publish): Promise<any>;
 
   /**
-   * 接收消息
+   * 订阅消息
    *
-   * @param {any} options
-   * @param {any} callback
+   * @param {((msg: Message | null) => any)} onMessage 订阅方法
+   * @param {amqp.Options.Consume} [options] 订阅配置
+   * @returns {Promise<void>}
    * @memberof MQ
    */
-  subscribe(
-    options: amqp.Options.Consume,
-    callback: (message, headers, fields) => {},
-  ): Promise<void>;
-  subscribe(callback: (message, headers, fields) => {}): Promise<void>;
+  subscribe(onMessage: (msg: Message | null) => any, options?: amqp.Options.Consume): Promise<void>;
 }
 export = MQ;
 

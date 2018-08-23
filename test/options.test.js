@@ -1,5 +1,4 @@
 const { getOptions } = require('../lib/options');
-const { expect } = require('chai');
 
 describe('options test', () => {
   it('getOptions:', () => {
@@ -11,7 +10,7 @@ describe('options test', () => {
       queueName: 'test',
     });
 
-    expect(options).to.deep.equal({
+    expect(options).toEqual({
       exchangeName: 'exTest',
       exchangeOption: { durable: true, autoDelete: false, type: 'direct' },
       queueName: 'test',

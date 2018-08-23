@@ -1,15 +1,7 @@
 const MQ = require('../index');
-const { expect } = require('chai');
 
-const connConfig = {
-  host: '192.168.8.18',
-  port: 5672,
-  login: 'epaperapi',
-  password: '123456',
-  vhost: 'epaperapi_dev',
-  reconnect: true,
-  reconnectBackoffTime: 10000, // 10秒尝试连接一次
-};
+const connConfig = {};
+
 const options = {
   exchangeName: 'exTest',
   exchangeOption: {
@@ -25,24 +17,16 @@ describe('mq test', () => {
     return mq
       .publishMsg('heartbeat-test')
       .then(result => {
-        expect(result).to.be.true;
+        expect(result).toBeTruthy();
       })
       .catch(err => {
-        console.log(err);
-        expect(err).to.be.null;
+        expect(err).toBeNull();
       });
   });
 
-  it('subscribe:', () => {
-    return mq.subscribe(async (message, headers) => {
-      expect(!!message).to.be.true;
+  it('subscribe:', async () => {
+    await mq.subscribe(async (message, headers) => {
+      expect(!!message).toBeTruthy();
     });
   });
 });
-
-// for (let i = 0; i < 10000; i++) {
-//   new MQ(connConfig, options)
-//     .publishMsg('2---' + i)
-//     // .then(console.log)
-//     .catch(console.error);
-// }
