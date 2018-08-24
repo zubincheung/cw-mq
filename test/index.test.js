@@ -29,6 +29,7 @@ describe('mq test', () => {
     await mq.subscribe(async (msg, headers, ch) => {
       expect(msg.content.toString()).toBe('heartbeat-test');
       expect(headers).toEqual({});
+      await ch.ack(msg);
     });
   });
 });
