@@ -86,20 +86,17 @@ class MQ {
   async subscribe(onMessage, options) {
     const ch = await this.createChannel();
 
-    const msg = await new Promise((resolve, reject) => {
-      ch.consume(this[OPTIONS].queueName, resolve, options).catch(reject);
-    });
+    await ch.consume(
+      this[OPTIONS].queueName,
+      async msg => {
+        const {
+          properties: { headers },
+        } = msg;
 
-    debug('consume:', msg);
-    const {
-      properties: { headers },
-    } = msg;
-
-    try {
-      await onMessage(msg, headers, ch);
-    } finally {
-      await ch.ack(msg);
-    }
+        await onMessage(msg, headers, ch);
+      },
+      { noAck: false, ...options },
+    );
   }
 }
 
