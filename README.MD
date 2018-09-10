@@ -32,20 +32,18 @@ npm install --save cw-rabbitmq
 
 ```javascript
 const connConfig = {
-  protocol: 'amqp',
-  hostname: 'localhost',
+  host: '',
   port: 5672,
-  username: 'guest',
-  password: 'guest',
-  locale: 'en_US',
-  frameMax: 0,
-  heartbeat: 0,
-  vhost: '/',
+  login: '',
+  password: '',
+  vhost: '',
+  reconnect: true,
+  reconnectBackoffTime: 10000, // 10秒尝试连接一次
 };
 const options = {
   exchangeName: 'exTest',
   exchangeOption: {
-    // 可选
+    // ke选
     type: 'direct',
     autoDelete: false,
     confirm: true,
@@ -60,9 +58,19 @@ const options = {
 
 const mq = new MQ(connConfig, options);
 
-mq.publishMsg('hello world');
+mq.publishMsg('heartbeat-test')
+  .then(result => {
+    console.info(`MQ心跳监测正常,result:${result}`);
+  })
+  .catch(err => {
+    console.info(`MQ心跳监测异常${err.toString()}`);
+  });
 
-mq.subscribe((msg, headers, ch) => {
-  console.log(msg.content.toString());
+mq.subscribeAsync().then(result => {
+  result.ack.acknowledge(true);
+});
+
+mq.subscribe((message, headers, deliveryInfo, ack) => {
+  ack.acknowledge(true);
 });
 ```
