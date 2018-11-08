@@ -4,11 +4,11 @@ const amqp = require('amqplib');
 const connConfig = {};
 
 const options = {
-  exchangeName: 'exTest',
+  exchangeName: 'exTest1',
   exchangeOption: {
     durable: true,
   },
-  queueName: 'test',
+  queueName: 'test1',
 };
 
 const mq = new MQ(connConfig, options);

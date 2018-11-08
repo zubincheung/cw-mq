@@ -52,6 +52,7 @@ class MQ {
 
     debug('bindQueue', this[OPTIONS].queueName, this[OPTIONS].exchangeName, 'routekey:""');
     await ch.bindQueue(this[OPTIONS].queueName, this[OPTIONS].exchangeName, '');
+    await ch.prefetch(10);
 
     return ch;
   }
