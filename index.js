@@ -86,6 +86,7 @@ class MQ {
    */
   async subscribe(onMessage, options) {
     const ch = await this.createChannel();
+    console.info(`${this[OPTIONS].queueName} subscribing ...`);
 
     await ch.consume(
       this[OPTIONS].queueName,
