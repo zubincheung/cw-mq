@@ -1,6 +1,7 @@
 // Create by Zubin on 2018-07-16 10:08:49
 
 const Debug = require('debug');
+const Promise = require('bluebird');
 
 const { getOptions } = require('./lib/options');
 const Connection = require('./lib/connection');
@@ -86,7 +87,7 @@ class MQ {
    */
   async subscribe(onMessage, options) {
     const ch = await this.createChannel();
-    console.info(`${this[OPTIONS].queueName} subscribing ...`);
+    console.info(`[mq] Waiting in${this[OPTIONS].queueName}...`);
 
     await ch.consume(
       this[OPTIONS].queueName,
