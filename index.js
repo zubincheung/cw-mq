@@ -1,7 +1,7 @@
+/* eslint-disable no-console */
 // Create by Zubin on 2018-07-16 10:08:49
 
 const Debug = require('debug');
-const Promise = require('bluebird');
 
 const { getOptions } = require('./lib/options');
 const Connection = require('./lib/connection');
