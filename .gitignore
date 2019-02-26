@@ -36,3 +36,4 @@ runtime/
 app/
 
 local_test/
+.DS_store
